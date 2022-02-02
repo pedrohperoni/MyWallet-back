@@ -21,6 +21,14 @@ const userRegisterSchema = joi.object({
   name: joi.string().required(),
   email: joi.string().email({ minDomainSegments: 2 }).lowercase().required(),
   password: joi.string().required(),
+  confirmPassword: joi.ref("password"),
+});
+
+const transactionRegisterSchema = joi.object({
+  user: joi.string().required(),
+  description: joi.string().required(),
+  type: joi.string().valid("incoming", "outgoing").required(),
+  value: joi.string().required(),
 });
 
 app.post("/register", async (req, res) => {
@@ -57,6 +65,39 @@ app.post("/register", async (req, res) => {
     console.error(500);
     res.sendStatus(500);
     return;
+  }
+});
+
+app.post("/transactions", async (req, res) => {
+  const transaction = req.body;
+  const validation = transactionRegisterSchema.validate(transaction);
+  if (validation.error) {
+    res.sendStatus(422);
+    return;
+  }
+
+  try {
+    await db.collection("transactions").insertOne({
+      user: transaction.user,
+      description: transaction.description,
+      type: transaction.type,
+      value: transaction.value,
+    });
+    res.sendStatus(201);
+  } catch (error) {
+    console.error(500);
+    res.sendStatus(500);
+    return;
+  }
+});
+
+app.get("/transactions", async (req, res) => {
+  try {
+    const transactions = await db.collection("transactions").find({}).toArray();
+    res.send(transactions);
+  } catch (error) {
+    console.error(error);
+    res.sendStatus(500);
   }
 });
 
