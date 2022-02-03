@@ -9,7 +9,7 @@ const transactionRegisterSchema = joi.object({
 });
 
 export async function postTransaction(req, res) {
-  const { authorization } = req.header;
+  const { authorization } = req.headers;
   const token = authorization?.replace("Bearer ", "");
 
   if (!token) return res.sendStatus(401);
@@ -33,6 +33,7 @@ export async function postTransaction(req, res) {
 
     try {
       await db.collection("transactions").insertOne({
+        userId: session.userId,
         user: transaction.user,
         description: transaction.description,
         type: transaction.type,
@@ -66,8 +67,9 @@ export async function getTransactions(req, res) {
     try {
       const transactions = await db
         .collection("transactions")
-        .find({})
+        .find({ userId: session.userId })
         .toArray();
+
       res.send(transactions);
     } catch (error) {
       console.error(error);
