@@ -3,6 +3,8 @@ import cors from "cors";
 import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
 import joi from "joi";
+import bcrypt from "bcrypt";
+import { v4 as uuid } from "uuid";
 
 dotenv.config();
 
@@ -24,6 +26,11 @@ const userRegisterSchema = joi.object({
   confirmPassword: joi.ref("password"),
 });
 
+const userLoginSchema = joi.object({
+  email: joi.string().required(),
+  password: joi.string().required(),
+});
+
 const transactionRegisterSchema = joi.object({
   user: joi.string().required(),
   description: joi.string().required(),
@@ -31,7 +38,7 @@ const transactionRegisterSchema = joi.object({
   value: joi.string().required(),
 });
 
-app.post("/register", async (req, res) => {
+app.post("/auth/sign-up", async (req, res) => {
   const user = req.body;
   const validation = userRegisterSchema.validate(user);
   if (validation.error) {
@@ -54,17 +61,56 @@ app.post("/register", async (req, res) => {
     return;
   }
 
+  const passwordHash = bcrypt.hashSync(user.password, 10);
+
   try {
     await db.collection("users").insertOne({
       name: user.name,
       email: user.email,
-      password: user.password,
+      password: passwordHash,
     });
     res.sendStatus(201);
   } catch (error) {
     console.error(500);
     res.sendStatus(500);
     return;
+  }
+});
+
+app.get("/auth/sign-in", async (req, res) => {
+  const user = req.body;
+  const validation = userLoginSchema.validate(user);
+
+  if (validation.error) {
+    res.sendStatus(422);
+    return;
+  }
+
+  try {
+    const existingUser = await db
+      .collection("users")
+      .findOne({ email: user.email });
+
+    if (
+      existingUser &&
+      bcrypt.compareSync(user.password, existingUser.password)
+    ) {
+      const token = uuid();
+
+      await db.collection("sessions").insertOne({
+        userId: user._id,
+        token,
+      });
+
+      res.send(token);
+    } else {
+      res
+        .sendStatus(500)
+        .send("Usuário não encontrado (email ou senha incorretos)");
+    }
+  } catch (error) {
+    console.error(error);
+    res.sendStatus(401);
   }
 });
 
