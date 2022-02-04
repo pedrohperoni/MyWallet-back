@@ -2,7 +2,6 @@ import db from "../db.js";
 import joi from "joi";
 
 const transactionRegisterSchema = joi.object({
-  user: joi.string().required(),
   description: joi.string().required(),
   type: joi.string().valid("incoming", "outgoing").required(),
   value: joi.string().required(),
