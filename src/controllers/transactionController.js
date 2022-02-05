@@ -1,12 +1,4 @@
 import db from "../db.js";
-import joi from "joi";
-
-const transactionRegisterSchema = joi.object({
-  description: joi.string().required(),
-  type: joi.string().valid("incoming", "outgoing").required(),
-  value: joi.string().required(),
-  date: joi.required(),
-});
 
 export async function postTransaction(req, res) {
   const { authorization } = req.headers;
@@ -20,32 +12,22 @@ export async function postTransaction(req, res) {
     return res.sendStatus(401);
   }
 
-  const user = await db.collection("users").findOne({
-    _id: session.userId,
-  });
-  if (user) {
-    const transaction = req.body;
-    const validation = transactionRegisterSchema.validate(transaction);
-    if (validation.error) {
-      res.sendStatus(422);
-      return;
-    }
+  const transaction = req.body;
 
-    try {
-      await db.collection("transactions").insertOne({
-        userId: session.userId,
-        user: transaction.user,
-        description: transaction.description,
-        type: transaction.type,
-        value: transaction.value,
-        date: transaction.date,
-      });
-      res.sendStatus(201);
-    } catch (error) {
-      console.error(500);
-      res.sendStatus(500);
-      return;
-    }
+  try {
+    await db.collection("transactions").insertOne({
+      userId: session.userId,
+      user: transaction.user,
+      description: transaction.description,
+      type: transaction.type,
+      value: transaction.value,
+      date: transaction.date,
+    });
+    res.sendStatus(201);
+  } catch (error) {
+    console.error(500);
+    res.sendStatus(500);
+    return;
   }
 }
 

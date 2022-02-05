@@ -1,32 +1,9 @@
 import bcrypt from "bcrypt";
 import { v4 as uuid } from "uuid";
 import db from "../db.js";
-import joi from "joi";
-
-const userRegisterSchema = joi.object({
-  name: joi
-    .string()
-    .min(3)
-    .max(30)
-    .pattern(/^\w+(?:\s+\w+)*$/)
-    .required(),
-  email: joi.string().email({ minDomainSegments: 2 }).lowercase().required(),
-  password: joi.string().min(3).required(),
-  confirmPassword: joi.ref("password"),
-});
-
-const userLoginSchema = joi.object({
-  email: joi.string().required(),
-  password: joi.string().required(),
-});
 
 export async function signUp(req, res) {
   const user = req.body;
-  const validation = userRegisterSchema.validate(user);
-  if (validation.error) {
-    res.sendStatus(422);
-    return;
-  }
 
   const emailAlreadyExists = await db
     .collection("users")
@@ -54,12 +31,6 @@ export async function signUp(req, res) {
 
 export async function signIn(req, res) {
   const user = req.body;
-  const validation = userLoginSchema.validate(user);
-
-  if (validation.error) {
-    res.sendStatus(422);
-    return;
-  }
 
   try {
     const existingUser = await db
