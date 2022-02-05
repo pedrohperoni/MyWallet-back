@@ -1,17 +1,7 @@
 import db from "../db.js";
 
 export async function postTransaction(req, res) {
-  const { authorization } = req.headers;
-  const token = authorization?.replace("Bearer ", "");
-
-  if (!token) return res.sendStatus(401);
-
-  const session = await db.collection("sessions").findOne({ token });
-
-  if (!session) {
-    return res.sendStatus(401);
-  }
-
+  const session = res.locals.session;
   const transaction = req.body;
 
   try {
@@ -32,15 +22,7 @@ export async function postTransaction(req, res) {
 }
 
 export async function getTransactions(req, res) {
-  const { authorization } = req.headers;
-  const token = authorization?.replace("Bearer ", "");
-
-  if (!token) return res.sendStatus(401);
-
-  const session = await db.collection("sessions").findOne({ token });
-  if (!session) {
-    return res.sendStatus(401);
-  }
+  const session = res.locals.session;
 
   const user = await db.collection("users").findOne({
     _id: session.userId,
