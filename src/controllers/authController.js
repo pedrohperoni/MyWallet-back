@@ -11,7 +11,7 @@ const userRegisterSchema = joi.object({
     .pattern(/^\w+(?:\s+\w+)*$/)
     .required(),
   email: joi.string().email({ minDomainSegments: 2 }).lowercase().required(),
-  password: joi.string().required(),
+  password: joi.string().min(3).required(),
   confirmPassword: joi.ref("password"),
 });
 

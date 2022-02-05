@@ -5,6 +5,7 @@ const transactionRegisterSchema = joi.object({
   description: joi.string().required(),
   type: joi.string().valid("incoming", "outgoing").required(),
   value: joi.string().required(),
+  date: joi.required(),
 });
 
 export async function postTransaction(req, res) {
@@ -37,6 +38,7 @@ export async function postTransaction(req, res) {
         description: transaction.description,
         type: transaction.type,
         value: transaction.value,
+        date: transaction.date,
       });
       res.sendStatus(201);
     } catch (error) {
