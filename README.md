@@ -4,7 +4,7 @@
     <img src="https://raw.githubusercontent.com/pedrohperoni/MyWallet-front/main/github/logo.png" alt="Logo">
 
   </a>
-   💰 <h3 align="center">A simple fullstack application to keep track of your finances, built using React and MongoDB</h3>
+  <h3 align="center">A simple fullstack application to keep track of your finances, built using React and MongoDB</h3>
   
   <p align="center">Live App -> https://tellaw-ym.vercel.app/
 </br>This project has a front-end repository -> https://github.com/pedrohperoni/MyWallet-frontk/</p>
